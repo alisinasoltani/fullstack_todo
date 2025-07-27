@@ -17,7 +17,8 @@ func main() {
         log.Println("No .env file found")
     }
 
-    database.InitDB()
+    db := database.InitDB()
+	database.SeedDatabase(db)
 
     app := fiber.New()
 
@@ -26,7 +27,6 @@ func main() {
         AllowMethods: "GET,POST,PUT,DELETE,PATCH",
         AllowHeaders: "Content-Type",
     }))
-
 
 	app.Get("/", func (c *fiber.Ctx) error {
         return c.SendString("Server is up and running!")
