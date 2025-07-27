@@ -55,7 +55,7 @@ func TestCreateTask(t *testing.T) {
 	}{
 		{
 			name:           "Valid task",
-			body:           `{"title":"Test Task","priority":"High","due_date":"2025-12-31"}`,
+			body:           `{"title":"Test Task","priority":"High","due_date":"2025-12-31T00:00:00Z"}`,
 			expectedStatus: http.StatusCreated,
 			expectedError:  "",
 		},
@@ -210,7 +210,7 @@ func TestUpdateTask(t *testing.T) {
 		{
 			name:           "Valid update",
 			id:             "1",
-			body:           `{"title":"Updated Task","priority":"High","due_date":"2025-12-31"}`,
+			body:           `{"title":"Updated Task","priority":"High","due_date":"2025-12-31T00:00:00Z"}`,
 			expectedStatus: http.StatusOK,
 			expectedError:  "",
 		},
@@ -291,8 +291,8 @@ func TestDeleteTask(t *testing.T) {
 		{
 			name:           "Non-existent ID",
 			id:             "999",
-			expectedStatus: http.StatusInternalServerError,
-			expectedError:  "Could not delete task",
+			expectedStatus: http.StatusNotFound,
+			expectedError:  "Task not found",
 		},
 	}
 
@@ -309,9 +309,10 @@ func TestDeleteTask(t *testing.T) {
 			if tt.expectedError != "" {
 				var result map[string]string
 				if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-					t.Fatalf("Failed to decode response: %v", err)
-				}
-				if result["error"] != tt.expectedError {
+					if resp.StatusCode != fiber.StatusNoContent {
+						t.Fatalf("Failed to decode response: %v", err)
+					}
+				} else if result["error"] != tt.expectedError {
 					t.Errorf("Expected error %q, got %q", tt.expectedError, result["error"])
 				}
 			}

@@ -249,8 +249,8 @@ func TestDeleteSubtask(t *testing.T) {
 		{
 			name:           "Non-existent ID",
 			id:             "999",
-			expectedStatus: http.StatusInternalServerError,
-			expectedError:  "Could not delete subtask",
+			expectedStatus: http.StatusNotFound,
+			expectedError:  "Subtask not found",
 		},
 	}
 
@@ -267,9 +267,10 @@ func TestDeleteSubtask(t *testing.T) {
 			if tt.expectedError != "" {
 				var result map[string]string
 				if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-					t.Fatalf("Failed to decode response: %v", err)
-				}
-				if result["error"] != tt.expectedError {
+					if resp.StatusCode != fiber.StatusNoContent {
+						t.Fatalf("Failed to decode response: %v", err)
+					}
+				} else if result["error"] != tt.expectedError {
 					t.Errorf("Expected error %q, got %q", tt.expectedError, result["error"])
 				}
 			}
