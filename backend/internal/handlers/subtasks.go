@@ -71,7 +71,14 @@ func DeleteSubtask(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid subtask ID"})
 	}
-	if err := database.DB.Delete(&models.Subtask{}, id).Error; err != nil {
+	var subtask models.Subtask
+	if err := database.DB.First(&subtask, id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Subtask not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not delete subtask"})
+	}
+	if err := database.DB.Delete(&subtask).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not delete subtask"})
 	}
 	return c.SendStatus(fiber.StatusNoContent)
