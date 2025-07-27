@@ -42,7 +42,9 @@ func TestCreateSubtask(t *testing.T) {
 
 	// Create a task for testing
 	task := models.Task{Title: "Test Task", Priority: "Medium"}
-	database.DB.Create(&task)
+	if err := database.DB.Create(&task).Error; err != nil {
+		t.Fatalf("Failed to create test task: %v", err)
+	}
 
 	tests := []struct {
 		name           string
@@ -94,7 +96,9 @@ func TestCreateSubtask(t *testing.T) {
 			}
 			if tt.expectedError != "" {
 				var result map[string]string
-				json.NewDecoder(resp.Body).Decode(&result)
+				if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+					t.Fatalf("Failed to decode response: %v", err)
+				}
 				if result["error"] != tt.expectedError {
 					t.Errorf("Expected error %q, got %q", tt.expectedError, result["error"])
 				}
@@ -108,9 +112,13 @@ func TestGetSubtasks(t *testing.T) {
 
 	// Create a task and subtask for testing
 	task := models.Task{Title: "Test Task", Priority: "Medium"}
-	database.DB.Create(&task)
+	if err := database.DB.Create(&task).Error; err != nil {
+		t.Fatalf("Failed to create test task: %v", err)
+	}
 	subtask := models.Subtask{TaskID: task.ID, Title: "Test Subtask"}
-	database.DB.Create(&subtask)
+	if err := database.DB.Create(&subtask).Error; err != nil {
+		t.Fatalf("Failed to create test subtask: %v", err)
+	}
 
 	req := httptest.NewRequest(http.MethodGet, "/tasks/1/subtasks", nil)
 	resp, err := app.Test(req)
@@ -122,11 +130,13 @@ func TestGetSubtasks(t *testing.T) {
 	}
 
 	var subtasks []models.Subtask
-	json.NewDecoder(resp.Body).Decode(&subtasks)
+	if err := json.NewDecoder(resp.Body).Decode(&subtasks); err != nil {
+		t.Fatalf("Failed to decode response: %v", err)
+	}
 	if len(subtasks) != 1 {
 		t.Errorf("Expected 1 subtask, got %d", len(subtasks))
 	}
-	if subtasks[0].Title != "Test Subtask" {
+	if len(subtasks) > 0 && subtasks[0].Title != "Test Subtask" {
 		t.Errorf("Expected subtask title %q, got %q", "Test Subtask", subtasks[0].Title)
 	}
 }
@@ -136,9 +146,13 @@ func TestUpdateSubtask(t *testing.T) {
 
 	// Create a task and subtask for testing
 	task := models.Task{Title: "Test Task", Priority: "Medium"}
-	database.DB.Create(&task)
+	if err := database.DB.Create(&task).Error; err != nil {
+		t.Fatalf("Failed to create test task: %v", err)
+	}
 	subtask := models.Subtask{TaskID: task.ID, Title: "Old Subtask"}
-	database.DB.Create(&subtask)
+	if err := database.DB.Create(&subtask).Error; err != nil {
+		t.Fatalf("Failed to create test subtask: %v", err)
+	}
 
 	tests := []struct {
 		name           string
@@ -190,7 +204,9 @@ func TestUpdateSubtask(t *testing.T) {
 			}
 			if tt.expectedError != "" {
 				var result map[string]string
-				json.NewDecoder(resp.Body).Decode(&result)
+				if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+					t.Fatalf("Failed to decode response: %v", err)
+				}
 				if result["error"] != tt.expectedError {
 					t.Errorf("Expected error %q, got %q", tt.expectedError, result["error"])
 				}
@@ -204,9 +220,13 @@ func TestDeleteSubtask(t *testing.T) {
 
 	// Create a task and subtask for testing
 	task := models.Task{Title: "Test Task", Priority: "Medium"}
-	database.DB.Create(&task)
+	if err := database.DB.Create(&task).Error; err != nil {
+		t.Fatalf("Failed to create test task: %v", err)
+	}
 	subtask := models.Subtask{TaskID: task.ID, Title: "Test Subtask"}
-	database.DB.Create(&subtask)
+	if err := database.DB.Create(&subtask).Error; err != nil {
+		t.Fatalf("Failed to create test subtask: %v", err)
+	}
 
 	tests := []struct {
 		name           string
@@ -246,7 +266,9 @@ func TestDeleteSubtask(t *testing.T) {
 			}
 			if tt.expectedError != "" {
 				var result map[string]string
-				json.NewDecoder(resp.Body).Decode(&result)
+				if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+					t.Fatalf("Failed to decode response: %v", err)
+				}
 				if result["error"] != tt.expectedError {
 					t.Errorf("Expected error %q, got %q", tt.expectedError, result["error"])
 				}
@@ -260,9 +282,13 @@ func TestUpdateSubtaskDone(t *testing.T) {
 
 	// Create a task and subtask for testing
 	task := models.Task{Title: "Test Task", Priority: "Medium"}
-	database.DB.Create(&task)
+	if err := database.DB.Create(&task).Error; err != nil {
+		t.Fatalf("Failed to create test task: %v", err)
+	}
 	subtask := models.Subtask{TaskID: task.ID, Title: "Test Subtask", Done: false}
-	database.DB.Create(&subtask)
+	if err := database.DB.Create(&subtask).Error; err != nil {
+		t.Fatalf("Failed to create test subtask: %v", err)
+	}
 
 	tests := []struct {
 		name           string
@@ -314,7 +340,9 @@ func TestUpdateSubtaskDone(t *testing.T) {
 			}
 			if tt.expectedError != "" {
 				var result map[string]string
-				json.NewDecoder(resp.Body).Decode(&result)
+				if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+					t.Fatalf("Failed to decode response: %v", err)
+				}
 				if result["error"] != tt.expectedError {
 					t.Errorf("Expected error %q, got %q", tt.expectedError, result["error"])
 				}

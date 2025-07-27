@@ -92,7 +92,9 @@ func TestCreateTask(t *testing.T) {
 			}
 			if tt.expectedError != "" {
 				var result map[string]string
-				json.NewDecoder(resp.Body).Decode(&result)
+				if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+					t.Fatalf("Failed to decode response: %v", err)
+				}
 				if result["error"] != tt.expectedError {
 					t.Errorf("Expected error %q, got %q", tt.expectedError, result["error"])
 				}
@@ -106,7 +108,9 @@ func TestGetTasks(t *testing.T) {
 
 	// Create a task for testing
 	task := models.Task{Title: "Test Task", Priority: "Medium"}
-	database.DB.Create(&task)
+	if err := database.DB.Create(&task).Error; err != nil {
+		t.Fatalf("Failed to create test task: %v", err)
+	}
 
 	req := httptest.NewRequest(http.MethodGet, "/tasks", nil)
 	resp, err := app.Test(req)
@@ -118,11 +122,13 @@ func TestGetTasks(t *testing.T) {
 	}
 
 	var tasks []models.Task
-	json.NewDecoder(resp.Body).Decode(&tasks)
+	if err := json.NewDecoder(resp.Body).Decode(&tasks); err != nil {
+		t.Fatalf("Failed to decode response: %v", err)
+	}
 	if len(tasks) != 1 {
 		t.Errorf("Expected 1 task, got %d", len(tasks))
 	}
-	if tasks[0].Title != "Test Task" {
+	if len(tasks) > 0 && tasks[0].Title != "Test Task" {
 		t.Errorf("Expected task title %q, got %q", "Test Task", tasks[0].Title)
 	}
 }
@@ -132,7 +138,9 @@ func TestGetTaskByID(t *testing.T) {
 
 	// Create a task for testing
 	task := models.Task{Title: "Test Task", Priority: "High"}
-	database.DB.Create(&task)
+	if err := database.DB.Create(&task).Error; err != nil {
+		t.Fatalf("Failed to create test task: %v", err)
+	}
 
 	tests := []struct {
 		name           string
@@ -172,7 +180,9 @@ func TestGetTaskByID(t *testing.T) {
 			}
 			if tt.expectedError != "" {
 				var result map[string]string
-				json.NewDecoder(resp.Body).Decode(&result)
+				if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+					t.Fatalf("Failed to decode response: %v", err)
+				}
 				if result["error"] != tt.expectedError {
 					t.Errorf("Expected error %q, got %q", tt.expectedError, result["error"])
 				}
@@ -186,7 +196,9 @@ func TestUpdateTask(t *testing.T) {
 
 	// Create a task for testing
 	task := models.Task{Title: "Old Task", Priority: "Low"}
-	database.DB.Create(&task)
+	if err := database.DB.Create(&task).Error; err != nil {
+		t.Fatalf("Failed to create test task: %v", err)
+	}
 
 	tests := []struct {
 		name           string
@@ -238,7 +250,9 @@ func TestUpdateTask(t *testing.T) {
 			}
 			if tt.expectedError != "" {
 				var result map[string]string
-				json.NewDecoder(resp.Body).Decode(&result)
+				if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+					t.Fatalf("Failed to decode response: %v", err)
+				}
 				if result["error"] != tt.expectedError {
 					t.Errorf("Expected error %q, got %q", tt.expectedError, result["error"])
 				}
@@ -252,7 +266,9 @@ func TestDeleteTask(t *testing.T) {
 
 	// Create a task for testing
 	task := models.Task{Title: "Test Task", Priority: "Medium"}
-	database.DB.Create(&task)
+	if err := database.DB.Create(&task).Error; err != nil {
+		t.Fatalf("Failed to create test task: %v", err)
+	}
 
 	tests := []struct {
 		name           string
@@ -292,7 +308,9 @@ func TestDeleteTask(t *testing.T) {
 			}
 			if tt.expectedError != "" {
 				var result map[string]string
-				json.NewDecoder(resp.Body).Decode(&result)
+				if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+					t.Fatalf("Failed to decode response: %v", err)
+				}
 				if result["error"] != tt.expectedError {
 					t.Errorf("Expected error %q, got %q", tt.expectedError, result["error"])
 				}
@@ -306,7 +324,9 @@ func TestUpdateTaskDone(t *testing.T) {
 
 	// Create a task for testing
 	task := models.Task{Title: "Test Task", Priority: "Medium", Done: false}
-	database.DB.Create(&task)
+	if err := database.DB.Create(&task).Error; err != nil {
+		t.Fatalf("Failed to create test task: %v", err)
+	}
 
 	tests := []struct {
 		name           string
@@ -358,7 +378,9 @@ func TestUpdateTaskDone(t *testing.T) {
 			}
 			if tt.expectedError != "" {
 				var result map[string]string
-				json.NewDecoder(resp.Body).Decode(&result)
+				if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+					t.Fatalf("Failed to decode response: %v", err)
+				}
 				if result["error"] != tt.expectedError {
 					t.Errorf("Expected error %q, got %q", tt.expectedError, result["error"])
 				}
