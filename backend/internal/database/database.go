@@ -11,7 +11,7 @@ import (
 
 var DB *gorm.DB
 
-func InitDB() {
+func InitDB() *gorm.DB {
     user := os.Getenv("DB_USER")
     password := os.Getenv("DB_PASSWORD")
     host := os.Getenv("DB_HOST")
@@ -26,4 +26,6 @@ func InitDB() {
         panic("failed to connect to database")
     }
     DB.AutoMigrate(&models.Task{}, &models.Subtask{})
+
+    return DB
 }
