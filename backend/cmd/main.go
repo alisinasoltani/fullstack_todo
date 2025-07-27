@@ -1,12 +1,11 @@
 package main
 
 import (
-	// "fmt"
 	"log"
 	"os"
 
 	"todo/internal/database"
-	// "todo-app/internal/handlers"
+	"todo/internal/handlers"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -33,18 +32,18 @@ func main() {
         return c.SendString("Server is up and running!")
     })
 
-    // app.Post("/tasks", handlers.CreateTask)
-    // app.Get("/tasks", handlers.GetTasks)
-    // app.Get("/tasks/:id", handlers.GetTaskByID)
-    // app.Put("/tasks/:id", handlers.UpdateTask)
-    // app.Delete("/tasks/:id", handlers.DeleteTask)
-    // app.Patch("/tasks/:id/done", handlers.UpdateTaskDone)
+    app.Post("/tasks", handlers.CreateTask)
+    app.Get("/tasks", handlers.GetTasks)
+    app.Get("/tasks/:id", handlers.GetTaskByID)
+    app.Put("/tasks/:id", handlers.UpdateTask)
+    app.Delete("/tasks/:id", handlers.DeleteTask)
+    app.Patch("/tasks/:id/done", handlers.UpdateTaskDone)
 
-    // app.Post("/tasks/:id/subtasks", handlers.CreateSubtask)
-    // app.Get("/tasks/:id/subtasks", handlers.GetSubtasks)
-    // app.Put("/subtasks/:id", handlers.UpdateSubtask)
-    // app.Delete("/subtasks/:id", handlers.DeleteSubtask)
-    // app.Patch("/subtasks/:id/done", handlers.UpdateSubtaskDone)
+    app.Post("/tasks/:id/subtasks", handlers.CreateSubtask)
+    app.Get("/tasks/:id/subtasks", handlers.GetSubtasks)
+    app.Put("/subtasks/:id", handlers.UpdateSubtask)
+    app.Delete("/subtasks/:id", handlers.DeleteSubtask)
+    app.Patch("/subtasks/:id/done", handlers.UpdateSubtaskDone)
 
     port := os.Getenv("PORT")
     if port == "" {
