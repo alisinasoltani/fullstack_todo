@@ -1,4 +1,3 @@
-// services/api.ts
 import {
   Task,
   Subtask,
@@ -11,9 +10,8 @@ import {
   UpdateSubtaskDonePayload,
 } from '../types';
 
-const BASE_URL = 'http://localhost:8080'; // Your Go backend URL
+const BASE_URL = 'http://localhost:8080';
 
-// Helper to simulate API delay
 const simulateDelay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // In-memory data store for simulation
