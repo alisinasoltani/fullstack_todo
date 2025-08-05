@@ -96,6 +96,13 @@ export const getTasks = async ({ assignee, status, sortBy }: GetTasksQueryParams
   // });
 };
 
+export const getAssignees = async (): Promise<string[]> => {
+  console.log("API: Getting tasks with filters",);
+  await simulateDelay(300);
+  let assignees: string[] = ['John Doe', 'Jane Smith', 'Alice Johnson'];
+  return assignees;
+};
+
 export const getTaskByID = async (id: string): Promise<Task> => {
   console.log("API: Getting task by ID", id);
   await simulateDelay(300);

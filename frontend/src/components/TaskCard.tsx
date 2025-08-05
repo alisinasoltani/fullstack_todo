@@ -2,13 +2,14 @@
 "use client";
 
 import React from 'react';
-import { useRouter } from 'next/navigation'; // Changed from react-router-dom
+import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import * as api from '@/services/api'; // Adjusted import path
-import { Task, Priority } from '@/types'; // Adjusted import path
+// Assuming these types and API functions are available
+import * as api from '@/services/api';
+import { Task, Priority } from '@/types';
 
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'; // Adjusted import path
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -17,20 +18,60 @@ import { format } from 'date-fns';
 
 interface TaskCardProps {
   task: Task;
+  assignees: string[];
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
-  const router = useRouter(); // Changed from useNavigate
+const TaskCard: React.FC<TaskCardProps> = ({ task, assignees }) => {
+  const router = useRouter();
   const queryClient = useQueryClient();
 
+  // New mutation hook with optimistic updates
   const updateTaskDoneMutation = useMutation({
     mutationFn: api.updateTaskDone,
-    onSuccess: () => {
+    
+    // onMutate is called before the mutation function fires.
+    // It allows us to optimistically update the cache.
+    onMutate: async (newTaskData: { id: string; done: boolean }) => {
+      // Cancel any outgoing refetches to prevent them from overwriting our optimistic update
+      await queryClient.cancelQueries({ queryKey: ['tasks'] });
+      
+      // Snapshot the previous value of the 'tasks' query
+      const previousTasks = queryClient.getQueryData(['tasks']);
+      
+      // Optimistically update the cache for the 'tasks' list
+      queryClient.setQueryData<Task[]>(['tasks'], oldTasks =>
+        oldTasks?.map(t =>
+          t.id === newTaskData.id ? { ...t, done: newTaskData.done } : t
+        )
+      );
+      
+      // Also optimistically update the individual task cache
+      queryClient.setQueryData<Task>(['task', task.id], oldTask => {
+        if (oldTask) {
+          return { ...oldTask, done: newTaskData.done };
+        }
+        return oldTask;
+      });
+
+      // Return a context object with the snapshot value
+      return { previousTasks };
+    },
+
+    // If the mutation fails, use the context returned from onMutate to roll back
+    onError: (err, variables, context) => {
+      toast.error(`Failed to update task status: ${err.message}`);
+      // Roll back to the previous data
+      queryClient.setQueryData(['tasks'], context?.previousTasks);
+    },
+    
+    // Always refetch after error or success to ensure the client is in sync with the server
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       queryClient.invalidateQueries({ queryKey: ['task', task.id] });
-      toast.success('Task status updated.');
     },
-    onError: (err: Error) => toast.error(`Failed to update task status: ${err.message}`),
+    onSuccess: () => {
+      toast.success('Task status updated.');
+    }
   });
 
   const handleDoneChange = (checked: boolean) => {
@@ -45,6 +86,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
       default: return 'default';
     }
   };
+
+  console.log("rerender");
 
   return (
     <Card className={`relative ${task.done ? 'opacity-70 border-gray-300' : 'border-blue-200'}`}>
@@ -68,7 +111,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
           <Checkbox
             id={`task-${task.id}-done`}
             checked={task.done}
-            onCheckedChange={(checked: boolean) => handleDoneChange(checked)}
+            onCheckedChange={handleDoneChange}
             aria-label="Mark task as done"
           />
           <label htmlFor={`task-${task.id}-done`} className="text-sm cursor-pointer">
@@ -85,4 +128,4 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
   );
 };
 
-export default TaskCard;
+export default React.memo(TaskCard);
